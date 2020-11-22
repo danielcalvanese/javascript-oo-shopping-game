@@ -1,121 +1,91 @@
 let gameComplete = false;
 // Define the three constants here
+const name = "unknown";
+const score = 0;
+const items = 0;
 
 // Define the player object here
+let player = {
+    name,
+    score,
+    items,
+
+    getCurrentScore() {
+        return this.score;
+    },
+    addPoints(points) {
+        this.score = this.score + points;
+    },
+    deductPoints(points) {
+        this.score = this.score - points;
+    }
+};
 
 // Define the Product class - write the Constructor function for Product class here
+function Product(id, name, price, expiryDate) {
+    this.id = id;
+    this.name = name;
+    this.price = price;
+    this.expiryDate = expiryDate;
+}
 
 // Complete the dateDiff function
-const dateDiff = (date1, date2) => {};
+const dateDiff = (date1, date2) => {
+    // time difference
+    let timeDiff = Math.abs(date2.getTime() - date1.getTime()); //Use the Math object and common features
+
+    // days difference
+    let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+    // difference
+    return diffDays;
+};
 
 // Here, use Object.defineProperty to create property - daysToExpire
+Object.defineProperty(Product.prototype, 'daysToExpire', {
+    get: function () {
+        return dateDiff(this.expiryDate, new Date()); //Use the Date object and common features
+    }
+});
 
 // Add method getDetails to Product here
+Product.prototype.getDetails = function () {
+    return `Product Code: ${this.code} Product Name: ${this.name}`;
+}
 
 // Define the MagicProduct class here
+function MagicProduct(id, name, price, expiryDate, points, isBonus) {
+    Product.call(this, id, name, price, expiryDate);
+    this.points = points;
+    this.isBonus = isBonus;
+}
 
 // Establish inheritance between Product() & MagicProduct() here
+MagicProduct.prototype = Object.create(Product.prototype);
 
 // Define Rating class here
-
-// Complete the loadProducts function
-const loadProducts = (map, prodId) => {
-    let a = new Array();
-    try {
-        // Call Object.keys() to load the property names of the Product object in to prodKeys array here
-        let prodKeys = [];
-
-        let iterator_obj = map.entries();
-
-        if (prodKeys.length > 0) {
-            for (let item of iterator_obj) {
-                const key = item[0];
-                const value = item[1];
-
-                // Create and assign an instance of Product to prodObj here
-                let prodObj;
-
-                if (prodObj != undefined && prodObj != null) {
-                    for (let i = 0; i < prodKeys.length; i++) {
-                        let property = prodKeys[i];
-                        if (property == "id") {
-                            prodObj[property] = prodId;
-                        } else if (property == "name") {
-                            prodObj[property] = key;
-                        } else if (property == "price") {
-                            prodObj[property] = value.pr;
-                        } else if (property == "expiryDate") {
-                            prodObj[property] = value.dt;
-                        }
-                    }
-
-                    a.push(prodObj);
-                    prodId++;
-                }
-            }
+class Rating {
+    set rating(value) {
+        if (value > 1 && value <= 4) {
+            this.rate = "OK";
+        } else if (value >= 5 && value <= 7) {
+            this.rate = "GOOD";
+        } else if (value > 7) {
+            this.rate = "EXCEPTIONAL";
+        } else {
+            this.rate = "BAD";
         }
-
-        return a;
-    } catch (e) {
-        return a;
     }
-};
-
-
-// Complete the loadMagicProducts function
-const loadMagicProducts = (map, prodId) => {
-    let a = new Array();
-    try {
-        // Call Object.key() to load the property names of the MagicProduct object in to magProdKeys array here
-        let magProdKeys = [];
-
-        let iterator_obj = map.entries();
-
-        if (magProdKeys.length > 0) {
-            for (let item of iterator_obj) {
-                const key = item[0];
-                const value = item[1];
-
-                // Create and assign an instance of MagicProduct to prodObj here
-                let magProdObj;
-
-                if (magProdObj != undefined && magProdObj != null) {
-                    for (let i = 0; i < magProdKeys.length; i++) {
-                        let property = magProdKeys[i];
-                        if (property == "id") {
-                            magProdObj[property] = prodId;
-                        } else if (property == "name") {
-                            magProdObj[property] = key;
-                        } else if (property == "price") {
-                            magProdObj[property] = value.pr;
-                        } else if (property == "expiryDate") {
-                            magProdObj[property] = value.dt;
-                        } else if (property == "points") {
-                            magProdObj[property] = value.pt;
-                        } else if (property == "isBonus") {
-                            magProdObj[property] = value.isB;
-                        }
-                    }
-
-                    a.push(magProdObj);
-                    prodId++;
-                }
-            }
-        }
-        return a;
-    } catch (e) {
-        return a;
-    }
-};
+}
 
 function loadMasterData() {
+    let productsList = new Array();
     let prodId = 1;
 
     const today = new Date();
     const oneYearLater = new Date(today.getFullYear() + 1, today.getMonth(), today.getDay());
     const daysLater = new Date(today.getFullYear(), today.getMonth(), today.getDay() + 3);
 
-    //##############Load Products###############################
     let productData = new Map();
     productData.set("popcorn", { pr: 100.50, dt: oneYearLater });
     productData.set("oatmeal", { pr: 100.25, dt: oneYearLater });
@@ -133,10 +103,30 @@ function loadMasterData() {
     productData.set("greens", { pr: 50, dt: daysLater });
     productData.set("sugar", { pr: 100, dt: oneYearLater });
 
+    let prodKeys = Object.keys(new Product());
 
-    let pro = loadProducts(productData, prodId);
+    const loadProducts = (value, key, map) => {
+        let prodObj = new Product();
+        for (let i = 0; i < prodKeys.length; i++) {
+            let property = prodKeys[i];
+            if (Object.is(property, "id")) {
+                prodObj[property] = prodId;
+            } else if (Object.is(property, "name")) {
+                prodObj[property] = key;
+            } else if (Object.is(property, "price")) {
+                prodObj[property] = value.pr;
+            } else if (Object.is(property, "expiryDate")) {
+                prodObj[property] = value.dt;
+            }
+        }
 
-    //##############Load MagicProducts###############################
+        productsList.push(prodObj);
+        prodId++;
+    };
+
+
+    productData.forEach(loadProducts);
+
     let magicProductData = new Map();
     magicProductData.set("Christmas cake", { pr: 1000, dt: oneYearLater, pt: 10, isB: true });
     magicProductData.set("honey", { pr: 200, dt: oneYearLater, pt: 20, isB: false });
@@ -144,33 +134,56 @@ function loadMasterData() {
     magicProductData.set("champagne", { pr: 2000, dt: oneYearLater, pt: 40, isB: true });
     magicProductData.set("cocktails", { pr: 2000, dt: oneYearLater, pt: 40, isB: true });
 
+    let magProdKeys = Object.keys(new MagicProduct());
 
-    prodId = pro.length + 1;
+    const loadMagicProducts = (value, key, map) => {
+        let prodObj = new MagicProduct();
+        for (let i = 0; i < magProdKeys.length; i++) {
+            let property = magProdKeys[i];
+            if (Object.is(property, "id")) { //Explain Object.is
+                prodObj[property] = prodId;
+            } else if (Object.is(property, "name")) {
+                prodObj[property] = key;
+            } else if (Object.is(property, "price")) {
+                prodObj[property] = value.pr;
+            } else if (Object.is(property, "expiryDate")) {
+                prodObj[property] = value.dt;
+            } else if (Object.is(property, "points")) {
+                prodObj[property] = value.pt;
+            } else if (Object.is(property, "isBonus")) {
+                prodObj[property] = value.isB;
+            }
+        }
 
-    let mpro = loadMagicProducts(magicProductData, prodId);
-    let productsList;
+        productsList.push(prodObj);
+        prodId++;
+    };
 
-    if ((pro != null && pro.length > 0) && (mpro != null && mpro.length > 0)) {
-        productsList = pro.concat(mpro);
-    }
+    magicProductData.forEach(loadMagicProducts);
 
     return productsList;
 }
 
 // Complete this function
-const findProductById = (id) => {};
+const findProductById = (id) => {
+    return function (product) {
+        return product.id == id;
+    }
+};
 
 // Complete this function
 const generateProductId = () => {};
 
-
-const getProduct = (prodList, pId) => {
-    return prodList.find(findProductById(pId));
+const getProduct = (prodList) => {
+    let rand = Math.floor(Math.random() * 20) + 1; //Use the Math object and common features
+    return prodList.find(findProductById(rand));
 };
 
 
 // Complete this function
-const calculateBill = (prod, tBill) => {};
+const calculateBill = (prod, tBill) => {
+    return tBill + prod.price;
+};
 
 const findPointsToBill = (roundedTotal) => {
     if (roundedTotal > 10 && roundedTotal <= 100) {
@@ -192,45 +205,60 @@ const findPointsToBill = (roundedTotal) => {
 
 
 // Complete this function
-const findPointsForExpDate = (prod) => {};
+const findPointsForExpDate = (prod) => {
+    if (prod.daysToExpire < 30) {
+        return 10;
+    } else {
+        return 0;
+    }
+};
 
 
 const calculatePoints = (prod, tBill) => {
-    let pointsToBill = findPointsToBill(Math.round(tBill));
+    let pointsToBill = findPointsToBill(Math.round(tBill)); //Use the Math object and common features
     let pointsForExpDate = findPointsForExpDate(prod);
+
+    console.log(`${prod.name} - ${prod.daysToExpire} - ${pointsForExpDate}`);
+    player.score = player.score + pointsToBill + pointsForExpDate;
+    if (prod instanceof MagicProduct) {
+        if (prod.isBonus) {
+            player.addPoints(prod.points);
+        } else {
+            player.deductPoints(prod.points);
+        }
+    }
 };
 
 // Complete this function
 function init(data) {
-    if (Object.is(data, undefined) == false && gameComplete == true) {
-        console.log("Welcome to the Shopping Master game! You can shop for groceries and become a Shopping Master!");
-        console.log("We offer you grocery items that you can buy or reject. You can buy up to 10 items.");
-        console.log("As you go along your shopping journey you will collect points.");
-        console.log("If you earn 500 points you become a Shopping Master!");
-        console.log("You can start the game or quit using the following options.");
-        console.log("1 - Shop".green);
-        console.log("2 - Quit".green);
-        console.log("=============================================================================================\n");
+    console.log("Welcome to the Shopping Master game! You can shop for groceries and become a Shopping Master!");
+    console.log("We offer you grocery items that you can buy or reject. You can buy up to 10 items.");
+    console.log("As you go along your shopping journey you will collect points.");
+    console.log("If you earn 500 points you become a Shopping Master!");
+    console.log("You can start the game or quit using the following options.");
+    console.log("1 - Shop".green);
+    console.log("2 - Quit".green);
+    console.log("=============================================================================================\n");
 
-        rl.question("What's your name? ", function (name) {
-            // Assign the player object's name property to the user entered name here
-            console.log(`Welcome ${player.name} !!!`.blue);
-            start(data);
-        });
+    rl.question("What's your name? ", function (name) {
+        // Assign the player object's name property to the user entered name here
+        player.name = name;
 
-    }
+        console.log(`Welcome ${player.name} !!!`.blue);
+        start(data);
+    });
 }
 
-    function start(data) {
-        rl.question("What would you like to do? <Enter option number>: ", function (option) {
-            if (option == "" || isNaN(option)) {
-                console.log("Invalid option! Enter 1 or 2".red);
-                start(data);
-            } else {
-                doAction(option, data);
-            }
-        });
-    }
+function start(data) {
+    rl.question("What would you like to do? <Enter option number>: ", function (option) {
+        if (option == "" || isNaN(option)) {
+            console.log("Invalid option! Enter 1 or 2".red);
+            start(data);
+        } else {
+            doAction(option, data);
+        }
+    });
+}
 
     // Complete this function
     const shop = (prodList, tBill, lastProd) => {
@@ -353,8 +381,6 @@ function init(data) {
     if (typeof MagicProduct != 'undefined') { exports.MagicProduct = MagicProduct; }
     if (typeof Rating != 'undefined') { exports.Rating = Rating; }
     exports.dateDiff = dateDiff;
-    exports.loadProducts = loadProducts;
-    exports.loadMagicProducts = loadMagicProducts;
     exports.loadMasterData = loadMasterData;
     exports.findProductById = findProductById;
     exports.generateProductId = generateProductId;
